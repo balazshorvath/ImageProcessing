@@ -107,6 +107,16 @@ def process_image(image_file):
         cv2.CHAIN_APPROX_SIMPLE
     )
     """
+        If there's still more, than two contours, try smoothing the colors even more.
+    """
+    if len(contours) > 2:
+        thresh = cv2.blur(thresh, (15, 15))
+        im2, contours, hierarchy = cv2.findContours(
+            thresh,
+            cv2.RETR_TREE,
+            cv2.CHAIN_APPROX_SIMPLE
+        )
+    """
         Define and filter boxes. Calculate the size and the angle of the rectangles.
     """
     boxes = []
@@ -122,6 +132,23 @@ def process_image(image_file):
         info = get_rectangle_info(box)
         if info[0] > 3000:
             data.append(info)
+    if len(data) == 0:
+        data.append((0.0, 0.0, 0.0, 0.0))
+        data.append((0.0, 0.0, 0.0, 0.0))
+    elif len(data) == 1:
+        data.append((0.0, 0.0, 0.0, 0.0))
+        if data[0][3] < 150:
+            data = data[::-1]
+    elif len(data) == 2:
+        if data[0][3] < 150:
+            data = data[::-1]
+    elif len(data) > 2:
+        print("The image %s has more, than two features! The first two rectangles are assumed to be the right ones."
+              % file)
+        data = data[0:2]
+        if data[0][3] < 150:
+            data = data[::-1]
+
     return data
 
 
@@ -132,8 +159,14 @@ data_file = open("output\\coke_bottles\\data.csv", "w")
 
 for j, file in enumerate(glob.glob("images\\cokes\\*")):
     image_data = process_image(file)
-    data_file.write("%s,%d\n" % (file, len(image_data)))
-    for rect in image_data:
-        data_file.write("%.2f,%.2f,%.2f\n" % (rect[0], rect[2], rect[3]))
+    data_file.write("%s,%d" % (file, len(image_data)))
+    data_file.write(",%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n" % (
+        image_data[0][0],  # area of the sticker rectangle
+        image_data[0][2],  # center_x
+        image_data[0][3],  # center_y
+        image_data[1][0],  # area of the cap rectangle
+        image_data[1][2],  # center_x
+        image_data[1][3],  # center_y
+    ))
 
 data_file.close()

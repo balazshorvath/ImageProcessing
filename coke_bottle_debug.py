@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pylab as pl
 from math import atan, sqrt
 
-image_file = "images\\cokes\\image018.jpg"
+image_file = "images\\cokes\\image008.jpg"
 
 
 def load_and_crop_image(file):
@@ -120,6 +120,17 @@ im2, contours, hierarchy = cv2.findContours(
     cv2.RETR_TREE,
     cv2.CHAIN_APPROX_SIMPLE
 )
+"""
+    if there's still more, than two contours, try smoothing the colors even more.
+"""
+if len(contours) > 2:
+    thresh = cv2.blur(thresh, (15, 15))
+
+    im2, contours, hierarchy = cv2.findContours(
+        thresh,
+        cv2.RETR_TREE,
+        cv2.CHAIN_APPROX_SIMPLE
+    )
 """
     Reload original image and draw the contours around the cap and sticker.
 """

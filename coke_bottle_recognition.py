@@ -1,3 +1,6 @@
+from sklearn import tree
+import csv
+
 """
     Bottle description:
         file_path,state
@@ -15,6 +18,8 @@
         rect_arean,rect_center_xn,rect_center_yn
 
 
+    Features:
+        [rect_count, rect_area1, rect_center_x1, rect_center_y1, rect_area2, rect_center_x2, rect_center_y2]
 """
 BOTTLE_ACCEPTABLE = 0
 BOTTLE_NO_CAP = 1
@@ -34,13 +39,20 @@ BOTTLE_NOT_ENOUGH_FLUID = 64
 BOTTLE_MISSING = 128
 
 
-def load_classification(file):
+def load_classification(file_path):
     return []
 
 
-def load_features(file):
+def load_features(file_path):
+    csv_file = open(file_path, "r")
+    features = {}
+    for row in csv_file:
+        r = row.split(",")
+        parsed_data = []
+        for d in r:
+            parsed_data.append(float(d.strip()))
+        features[r[0]] = parsed_data
     return []
 
 
-def train(classifications, features):
-    pass
+dt = tree.DecisionTreeClassifier()
