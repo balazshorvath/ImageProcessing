@@ -57,3 +57,4 @@ for j, file in enumerate(glob.glob("images\\patterns\\*")):
         result_image.save("output\\samples\\mask" + str(i) + "_" + filename)
     plt.savefig("output\\samples\\result" + str(j) + filename + ".png")
     # plt.show()
+data_file.close()
