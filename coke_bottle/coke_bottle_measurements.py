@@ -1,6 +1,5 @@
 import glob
 import os
-from sys import argv
 
 import cv2
 import numpy as np
