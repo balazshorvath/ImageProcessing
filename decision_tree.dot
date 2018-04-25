@@ -1,0 +1,20 @@
+digraph Tree {
+node [shape=box] ;
+0 [label="rect_area1 <= 11338.5\ngini = 0.704\nsamples = 14\nvalue = [6, 3, 3, 2]\nclass = Perfect"] ;
+1 [label="rect_center_y2 <= 21.0\ngini = 0.48\nsamples = 5\nvalue = [0, 0, 3, 2]\nclass = Missing or bad label"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="rect_area1 <= 7559.0\ngini = 0.444\nsamples = 3\nvalue = [0, 0, 1, 2]\nclass = No bottle"] ;
+1 -> 2 ;
+3 [label="gini = 0.0\nsamples = 2\nvalue = [0, 0, 0, 2]\nclass = No bottle"] ;
+2 -> 3 ;
+4 [label="gini = 0.0\nsamples = 1\nvalue = [0, 0, 1, 0]\nclass = Missing or bad label"] ;
+2 -> 4 ;
+5 [label="gini = 0.0\nsamples = 2\nvalue = [0, 0, 2, 0]\nclass = Missing or bad label"] ;
+1 -> 5 ;
+6 [label="rect_area2 <= 3372.5\ngini = 0.444\nsamples = 9\nvalue = [6, 3, 0, 0]\nclass = Perfect"] ;
+0 -> 6 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+7 [label="gini = 0.0\nsamples = 3\nvalue = [0, 3, 0, 0]\nclass = Missing cap"] ;
+6 -> 7 ;
+8 [label="gini = 0.0\nsamples = 6\nvalue = [6, 0, 0, 0]\nclass = Perfect"] ;
+6 -> 8 ;
+}
