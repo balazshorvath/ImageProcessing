@@ -4,9 +4,6 @@ import cv2
 import numpy as np
 
 
-# from matplotlib import pylab as pl
-
-
 def blur_image(img, kernel):
     img = cv2.blur(img, (31, 31))
     img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel, iterations=2)
@@ -14,6 +11,13 @@ def blur_image(img, kernel):
 
 
 def collect_image_data(directory_pattern):
+    """
+    Tries to parse the files found in with the pattern.
+    Files are found using "glob".
+
+    :param directory_pattern: example images/*
+    :return: features of the found images in the following format: [[area1,r1,g1,b1],[area2,r2,g2,b2], ...]
+    """
     kernel = np.ones((15, 15), np.uint8)
     features = []
     for j, file in enumerate(glob.glob(directory_pattern)):
