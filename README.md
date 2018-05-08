@@ -1,5 +1,5 @@
-##Projects
-###Labello
+## Projects
+### Labello
 We have images with black background color and one object.
 There's a collection of images with "Labello" on them.
 
@@ -8,14 +8,14 @@ has a "Labello" on them and which images don't.
 
 I used OpenCV
 
-##Dependencies
-###OpenCV
+## Dependencies
+### OpenCV
 Only for coke_bottle and labello projects.
 ```
 conda install -c conda-forge opencv
 ```
-###Matplotlib
-###Scipy
+### Matplotlib
+### Scipy
 Only for convolution project.
-###PIL
+### PIL
 Only for convolution project.
