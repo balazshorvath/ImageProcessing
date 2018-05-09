@@ -14,9 +14,9 @@ def create_dnn(data, layer_neurons: [], randomize_biases=False, **kwargs):
     nn_len = len(layer_neurons)
     for i in range(nn_len - 2):
         if randomize_biases:
-            biases = tf.Variable(tf.random_normal(layer_neurons[i]))
+            biases = tf.Variable(tf.random_normal([layer_neurons[i]]))
         else:
-            biases = tf.Variable(tf.ones(layer_neurons[i]))
+            biases = tf.Variable(tf.ones([layer_neurons[i]]))
         # previous * weight + bias
         current_data = tf.add(
             tf.matmul(

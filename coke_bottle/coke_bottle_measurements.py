@@ -78,7 +78,7 @@ def process_image(image_file):
     image = load_and_crop_image(image_file)
 
     """
-        Draw approximate poligons based on the contours and fill them with black.
+        Draw approximate polygons based on the contours and fill them with black.
         Show the new image.
     """
     boxes = []
