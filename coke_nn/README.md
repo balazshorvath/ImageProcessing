@@ -4,11 +4,15 @@ Later this method should be extended with the fluid level features as well.
 ## Images
 ### Classes
 Images may have the following classes:
- - (0) Bottle is OK
- - (1) Cap missing
- - (2) Label missing, or was put on wrong
- - (4) Bottle is not present
- - (8) LATER: Fluid level is not right
+ - (0, 0000) Bottle is OK
+ - (1, 0001) Cap missing
+ - (2, 0010) Label missing, or was put on wrong
+ - (3, 0011) Label and cap
+ - (4, 0100) Fluid level is not right
+ - (5, 0101) Fluid and cap
+ - (6, 0110) Fluid and label
+ - (7, 0111) Bottle is not present
+ - (8, 1000) Deformed bottle
 
 The number in front of the classes are the integer values for them.
 
