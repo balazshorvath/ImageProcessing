@@ -41,7 +41,7 @@ def get_rectangle_info(rct):
     return rect_data
 
 
-image_file = "images\\image001.jpg"
+image_file = "images\\image046.jpg"
 """
     Crop the image to contian only the bottle in the middle.
     Show the image.
