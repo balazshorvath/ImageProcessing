@@ -1,11 +1,12 @@
 import tensorflow as tf
-import nu
+import numpy as np
 
 
+# TODO Use TF datasets! Also has CSV parser: https://www.tensorflow.org/get_started/datasets_quickstart
 class DataContainer:
     batch_size: int
     batches = []
-    current_batch: 0
+    current_batch = 0
 
     def __init__(self, features, labels, batch_size=1) -> None:
         super().__init__()
@@ -15,7 +16,7 @@ class DataContainer:
         if batch_size < 1:
             raise ValueError("Batch size must be greater, than 0!")
         self.batch_size = batch_size
-        for i in range(len(features / batch_size)):
+        for i in range(int(len(features) / batch_size)):
             last_index = (i + 1) * batch_size
             if last_index > data_length:
                 last_index = data_length
@@ -56,10 +57,10 @@ def transform_to_one_hot(labels: [], **kwargs):
     :param labels: array-like containing integers
     :return: matrix with the width of the max(labels) and length of len(labels)
     """
-    if "hot_size" is kwargs:
+    if "hot_size" in kwargs:
         hot_size = kwargs["hot_size"]
     else:
-        hot_size = max(labels)
+        hot_size = max(labels) + 1
     result = []
     for label in labels:
         one_hot = [0] * hot_size
@@ -69,7 +70,7 @@ def transform_to_one_hot(labels: [], **kwargs):
     return result
 
 
-def create_dnn(layer_neurons: [], randomize_biases=False, **kwargs):
+def create_dnn(layer_neurons: [], features_placeholder, randomize_biases=False, **kwargs):
     # Check if the number of classes and features are provided explicitly
     # If so, add them to the list of neurons
     # This might be a stupid feature, but whatever.
@@ -78,19 +79,17 @@ def create_dnn(layer_neurons: [], randomize_biases=False, **kwargs):
     if "n_features" in kwargs:
         layer_neurons.insert(0, kwargs["n_features"])
 
-    current_data = tf.placeholder("float", [None, len(layer_neurons[0])])
+    current_data = features_placeholder
     nn_len = len(layer_neurons)
     for i in range(nn_len - 2):
         if randomize_biases:
-            biases = tf.Variable(tf.random_normal([layer_neurons[i]]))
+            biases = tf.Variable(tf.random_normal([layer_neurons[i + 1]]))
         else:
-            biases = tf.Variable(tf.ones([layer_neurons[i]]))
+            biases = tf.Variable(tf.ones([layer_neurons[i + 1]]))
+        weights = tf.Variable(tf.random_normal([layer_neurons[i], layer_neurons[i + 1]]))
         # previous * weight + bias
         current_data = tf.add(
-            tf.matmul(
-                current_data,
-                tf.Variable(tf.random_normal([layer_neurons[i], layer_neurons[i + 1]]))
-            ),
+            tf.matmul(current_data, weights),
             biases
         )
         # Activation function using linear rectifier
@@ -100,9 +99,9 @@ def create_dnn(layer_neurons: [], randomize_biases=False, **kwargs):
     n_classes = layer_neurons[nn_len - 1]
     n_previous = layer_neurons[nn_len - 2]
     if randomize_biases:
-        biases = tf.Variable(tf.random_normal(n_previous))
+        biases = tf.Variable(tf.random_normal([n_classes]))
     else:
-        biases = tf.Variable(tf.ones(n_previous))
+        biases = tf.Variable(tf.ones([n_classes]))
     return tf.add(
         tf.matmul(
             current_data,
@@ -112,16 +111,33 @@ def create_dnn(layer_neurons: [], randomize_biases=False, **kwargs):
     )
 
 
-def train_dnn(dnn, label_placeholder, train_data: DataContainer, epochs, learning_rate=0.001):
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(dnn, label_placeholder))
+def train_and_test_dnn(dnn, features_placeholder, label_placeholder, train_data: DataContainer, test_features,
+                       test_labels, epochs, learning_rate=0.001):
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=dnn, labels=label_placeholder))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
         for epoch in range(epochs):
             epoch_loss = 0
             while train_data.has_next():
-                x, y = train_data.next()
-                _, c = session.run([optimizer, cost], feed_dict={x: x, y: y})
-                epoch_loss = c
-            print("Epoch %d/%d completed. Loss for this epoch was %.2f" % (epoch, epochs, epoch_loss))
+                curr_x, curr_y = train_data.next()
+                _, c = session.run(
+                    [optimizer, cost],
+                    feed_dict={features_placeholder: curr_x, label_placeholder: curr_y}
+                )
+                epoch_loss += c
+            train_data.reset()
+            print("Epoch %d/%d completed. Loss for this epoch was %.2f" % (epoch + 1, epochs, epoch_loss))
+
+        # accuracy = session.run([dnn],
+        #                        feed_dict={features_placeholder: test_features, label_placeholder: test_labels})
+        # for r in accuracy:
+        #     for i, r1 in enumerate(r):
+        #         print(str(np.argmax(test_labels[i])) + " - " + str(np.argmax(r1)))
+        correct = tf.equal(tf.argmax(dnn, 1), tf.argmax(label_placeholder, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct, "float"))
+        print(
+            "Accuracy: %.2f" % (
+                accuracy.eval(
+                    {features_placeholder: test_features, label_placeholder: test_labels})))

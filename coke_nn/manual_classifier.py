@@ -11,7 +11,7 @@ for j, file in enumerate(glob.glob("images\\*")):
     pl.imshow(image)
     pl.show()
     image_class = input("What was the class of the image? ").strip()
-    out_file.write("%s;%s\n" % (file, image_class))
+    out_file.write("%s,%s\n" % (file, image_class))
     out_file.flush()
 
 out_file.close()

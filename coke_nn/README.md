@@ -1,6 +1,9 @@
 # Notes for classifying coke bottles with DNN
+Using Multi-layer Perceptron.
+
 This a newer version of the "coke_bottle" task. I'll use the same technique to extract the features from the images.
 Later this method should be extended with the fluid level features as well.
+
 ## Images
 ### Classes
 Images may have the following classes:
