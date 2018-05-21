@@ -6,10 +6,10 @@ import numpy as np
 from math import atan, sqrt
 
 
-def load_and_crop_image(file):
-    img = cv2.imread(file)
-    img = np.array(img)
-    return img[:, 115:243]
+# def load_and_crop_image(file):
+#     img = cv2.imread(file)
+#     img = np.array(img)
+#     return img[:, 115:243]
 
 
 def get_rectangle_info(rct):
@@ -45,11 +45,12 @@ def get_rectangle_info(rct):
 
 def cap_and_label_features(image_file):
     """
+        NOT NEEDED ANYMORE
         Crop the image to contian only the bottle in the middle.
         Show the image.
     """
-    image = load_and_crop_image(image_file)
-
+    # image = load_and_crop_image(image_file)
+    image = cv2.imread(image_file)
     """
         Use erosion on the cropped image.
         Show..
@@ -75,7 +76,7 @@ def cap_and_label_features(image_file):
     """
         Reload original image and crop it, OpenCV alters the original.
     """
-    image = load_and_crop_image(image_file)
+    image = cv2.imread(image_file)
 
     """
         Draw approximate polygons based on the contours and fill them with black.
@@ -156,7 +157,7 @@ def fluid_features(image_file):
         Crop the image to contian only the bottle in the middle.
         Show the image.
     """
-    image = load_and_crop_image(image_file)
+    image = cv2.imread(image_file)
 
     kernel = np.ones((5, 5), np.uint8)
     image = cv2.erode(image, kernel, iterations=5)
