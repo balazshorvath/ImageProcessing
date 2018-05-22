@@ -153,10 +153,6 @@ def cap_and_label_features(image_file):
 
 
 def fluid_features(image_file):
-    """
-        Crop the image to contian only the bottle in the middle.
-        Show the image.
-    """
     image = cv2.imread(image_file)
 
     kernel = np.ones((5, 5), np.uint8)
@@ -179,7 +175,7 @@ def fluid_features(image_file):
         rect_info = get_rectangle_info(rect)
         if rect_info[0] > 500:
             return [y]
-    return [0.0]
+    return [len(image)]
 
 
 if not os.path.exists("data"):
@@ -187,10 +183,10 @@ if not os.path.exists("data"):
 
 data_file = open("data\\features.csv", "w")
 
-for j, file in enumerate(glob.glob("images\\*")):
+for j, file in enumerate(glob.glob("images\\split\\*")):
     features1 = cap_and_label_features(file)
     features2 = fluid_features(file)
-    data_file.write("%s,%d" % (file, len(features1)))
+    data_file.write("%s" % file)
     data_file.write(",%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n" % (
         features1[0][0],  # area of the sticker rectangle
         features1[0][2],  # center_x

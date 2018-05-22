@@ -5,7 +5,7 @@ from matplotlib import pyplot as pl
 
 out_file = open("data\\classification.csv", "w")
 
-for j, file in enumerate(glob.glob("images\\*")):
+for j, file in enumerate(glob.glob("images\\split\\*")):
     image = cv2.imread(file)
     pl.figure()
     pl.imshow(image)

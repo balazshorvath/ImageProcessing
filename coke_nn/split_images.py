@@ -11,11 +11,11 @@ if not os.path.exists(out_dir):
 
 for file in glob.glob("images/*.jpg"):
     img = np.array(cv2.imread(file))
-    cv2.imwrite(out_dir + str(current_id) + ".jpg", img[:, :115])
+    cv2.imwrite("%s%04d.jpg" % (out_dir, current_id), img[:, :115])  # out_dir + str(current_id) + ".jpg", img[:, :115])
     current_id += 1
-    cv2.imwrite(out_dir + str(current_id) + ".jpg", img[:, 115:243])
+    cv2.imwrite("%s%04d.jpg" % (out_dir, current_id), img[:, 115:243])
     current_id += 1
-    cv2.imwrite(out_dir + str(current_id) + ".jpg", img[:, 243:])
+    cv2.imwrite("%s%04d.jpg" % (out_dir, current_id), img[:, 243:])
     current_id += 1
 
 """

@@ -158,9 +158,9 @@ data_file = open("output\\coke_bottles\\data.csv", "w")
 
 for j, file in enumerate(glob.glob("images\\cokes\\*")):
     image_data = process_image(file)
-    data_file.write("%s,%d" % (file, len(image_data)))
-    data_file.write(",%.2f,%.2f,%.2f,%.2f,%.2f\n" % (
-        # image_data[0][0],  # area of the sticker rectangle
+    data_file.write("%s" % file)
+    data_file.write(",%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n" % (
+        image_data[0][0],  # area of the sticker rectangle
         image_data[0][2],  # center_x
         image_data[0][3],  # center_y
         image_data[1][0],  # area of the cap rectangle
@@ -168,4 +168,4 @@ for j, file in enumerate(glob.glob("images\\cokes\\*")):
         image_data[1][3],  # center_y
     ))
 
-data_file.close()
+    data_file.close()

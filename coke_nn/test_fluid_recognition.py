@@ -41,7 +41,7 @@ def get_rectangle_info(rct):
     return rect_data
 
 
-image_file = "images\\image046.jpg"
+image_file = "images\\image031.jpg"
 """
     Crop the image to contian only the bottle in the middle.
     Show the image.
@@ -57,13 +57,13 @@ image = cv2.dilate(image, kernel, iterations=10)
 pl.subplot(2, 3, 2)
 pl.imshow(image)
 
-image = cv2.blur(image, (25, 25))
-pl.subplot(2, 3, 3)
-pl.imshow(image)
-
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 _, thresh = cv2.threshold(image, 60, 255, cv2.THRESH_BINARY_INV)
 pl.subplot(2, 3, 4)
+pl.imshow(thresh)
+
+image = cv2.blur(thresh, (25, 25))
+pl.subplot(2, 3, 3)
 pl.imshow(thresh)
 
 im2, contours, hierarchy = cv2.findContours(
