@@ -1,73 +1,42 @@
 from helpers.nn_helper import *
 import tensorflow as tf
 
-"""
-CSV parsing
-"""
+print("Loading and preparing data.")
+features = load_features("data/features.csv")
+fluid_features = {}
+cap_label_features = {}
 
+for k, v in features.items():
+    fluid_features[k] = [v[len(v) - 1]]
+    cap_label_features[k] = v[:len(v) - 1]
 
-def load_classification(file_path):
-    csv_file = open(file_path, "r")
-    _labels = {}
-    for row in csv_file:
-        r = row.split(",")
-        _labels[r[0].strip()] = int(r[1].strip())
-    return _labels
+fluid_set = SampleSet(load_classification("data/classification_fluid.csv"), fluid_features)
+cap_and_label_set = SampleSet(load_classification("data/classification_cap_label.csv"), cap_label_features)
 
+fluid_training, fluid_test = fluid_set.get_data_containers(0.8, randomize=True)
+cap_and_label_training, cap_and_label_test = cap_and_label_set.get_data_containers(0.8, randomize=True)
 
-def load_features(file_path):
-    csv_file = open(file_path, "r")
-    _features = {}
-    for row in csv_file:
-        r = row.split(",")
-        parsed_data = []
-        for d in r[1:]:
-            parsed_data.append(float(d.strip()))
-        _features[r[0]] = parsed_data
-    return _features
+print(cap_and_label_test.get_once())
 
+print("Data ready.")
 
-"""
-Load stuff from file
-"""
-features = load_features("data\\features.csv")
-labels = load_classification("data\\classification.csv")
-t_features = load_features("data\\test_features.csv")
-t_labels = load_classification("data\\test_classification.csv")
-training_features = []
-training_labels = []
-test_features = []
-test_labels = []
-
-"""
-Parse/Transform
-"""
-for key in features.keys():
-    feature = features[key]
-    label = labels[key]
-    training_features.append(feature)
-    training_labels.append(transform_to_one_hot([label], hot_size=9)[0])
-
-for key in t_features.keys():
-    feature = t_features[key]
-    label = t_labels[key]
-    test_features.append(feature)
-    test_labels.append(transform_to_one_hot([label], hot_size=9)[0])
-
+print("Initializing DNN.")
 """
 Create placeholders
 """
-label_placeholder = tf.placeholder("float", [None, 9])
-features_placeholder = tf.placeholder("float", [None, 8])
+label_placeholder = tf.placeholder("float", [None, 3])
+features_placeholder = tf.placeholder("float", [None, 1])
 
 """
 Create and train dnn
 """
-dnn = create_dnn([50, 50, 50], features_placeholder, n_features=8, n_classes=9, randomize_biases=False)
+dnn = create_dnn([50, 50, 50], features_placeholder, n_features=1, n_classes=3, randomize_biases=False)
+print("Initializing DNN finished.")
+print("Training and testing DNN.")
 train_and_test_dnn(
     dnn,
     features_placeholder, label_placeholder,
-    DataContainer(training_features, training_labels, 10),
-    test_features, test_labels,
+    fluid_training,
+    fluid_test,
     epochs=250, learning_rate=0.0001
 )

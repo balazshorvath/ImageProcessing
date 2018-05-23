@@ -1,15 +1,18 @@
 import tensorflow as tf
+import random
 import numpy as np
 
 
 # TODO Use TF datasets! Also has CSV parser: https://www.tensorflow.org/get_started/datasets_quickstart
 class DataContainer:
     batch_size: int
-    batches = []
-    current_batch = 0
+    batches: []
+    current_batch: int
 
     def __init__(self, features, labels, batch_size=1) -> None:
         super().__init__()
+        self.batches = []
+        self.current_batch = 0
         data_length = len(features)
         if data_length != len(labels):
             raise ValueError("Features and labels have different lengths!")
@@ -38,8 +41,18 @@ class DataContainer:
     def reset(self):
         self.current_batch = 0
 
+    def get_once(self):
+        feature_res = []
+        class_res = []
+        for i in self.batches:
+            for j in i[0]:
+                feature_res.append(j)
+            for j in i[1]:
+                class_res.append(j)
+        return feature_res, class_res
 
-def transform_to_one_hot(labels: [], **kwargs):
+
+def transform_to_one_hot(labels, **kwargs):
     """
     Create a list with the size of maximum value inside the parameter list.
     The one hot will be at the index of a label value.
@@ -50,6 +63,7 @@ def transform_to_one_hot(labels: [], **kwargs):
 
     The label values should be "compressed" (consecutive number only), this way there won't be elements which will
     never have the value 1.
+    The labels parameter may also be a single integer, in this case hot_size is a must
 
     There's an optional parameter "hot_size", which sets the width of the result.
     Useful, if the labels array might not contain all the possible values.
@@ -61,6 +75,12 @@ def transform_to_one_hot(labels: [], **kwargs):
         hot_size = kwargs["hot_size"]
     else:
         hot_size = max(labels) + 1
+
+    if isinstance(labels, int):
+        one_hot = [0] * hot_size
+        one_hot[labels] = 1
+        return one_hot
+
     result = []
     for label in labels:
         one_hot = [0] * hot_size
@@ -111,8 +131,8 @@ def create_dnn(layer_neurons: [], features_placeholder, randomize_biases=False, 
     )
 
 
-def train_and_test_dnn(dnn, features_placeholder, label_placeholder, train_data: DataContainer, test_features,
-                       test_labels, epochs, learning_rate=0.001):
+def train_and_test_dnn(dnn, features_placeholder, label_placeholder, train_data: DataContainer,
+                       test_data: DataContainer, epochs, learning_rate=0.001):
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=dnn, labels=label_placeholder))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
@@ -137,7 +157,60 @@ def train_and_test_dnn(dnn, features_placeholder, label_placeholder, train_data:
         #         print(str(np.argmax(test_labels[i])) + " - " + str(np.argmax(r1)))
         correct = tf.equal(tf.argmax(dnn, 1), tf.argmax(label_placeholder, 1))
         accuracy = tf.reduce_mean(tf.cast(correct, "float"))
+        all_test_data = test_data.get_once()
         print(
             "Accuracy: %.2f" % (
                 accuracy.eval(
-                    {features_placeholder: test_features, label_placeholder: test_labels})))
+                    {features_placeholder: all_test_data[0], label_placeholder: all_test_data[1]})))
+
+
+class SampleSet:
+    samples: []
+
+    def __init__(self, labels, features, one_hot=True):
+        self.samples = []
+        if one_hot:
+            hot_size = max(labels.values()) + 1
+        else:
+            hot_size = 0
+
+        for k, v in labels.items():
+            if one_hot:
+                self.samples.append((k, transform_to_one_hot(v, hot_size=hot_size), features[k]))
+            else:
+                self.samples.append((k, v, features[k]))
+
+    def get_data_containers(self, train_percentage=0.8, randomize=True, batch_size=10):
+        if train_percentage >= 1 or train_percentage <= 0:
+            raise ValueError("train_percentage has to be between 0 and 1")
+        if randomize:
+            randomized = random.sample(self.samples, len(self.samples))
+        else:
+            randomized = self.samples
+        randomized = np.array(randomized, dtype=tuple)
+        count = int(len(self.samples) * train_percentage)
+        return (
+            DataContainer(list(randomized[:count, 2]), list(randomized[:count, 1]), batch_size),
+            DataContainer(list(randomized[count:, 2]), list(randomized[count:, 1]), batch_size)
+        )
+
+
+def load_classification(file_path):
+    csv_file = open(file_path, "r")
+    _labels = {}
+    for row in csv_file:
+        r = row.split(",")
+        _labels[r[0].strip()] = int(r[1].strip())
+    return _labels
+
+
+def load_features(file_path):
+    csv_file = open(file_path, "r")
+    _features = {}
+    for row in csv_file:
+        r = row.split(",")
+        parsed_data = []
+        for d in r[1:]:
+            parsed_data.append(float(d.strip()))
+        _features[r[0]] = parsed_data
+    return _features

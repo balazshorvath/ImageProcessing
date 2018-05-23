@@ -10,29 +10,35 @@ def load_classification(file_path):
     return _labels
 
 
-counts = [0] * 13
-classification = load_classification("data\\classification.csv")
+counts = [0] * 5
+classification = load_classification("data\\classification_cap_label.csv")
 for k, v in classification.items():
     counts[v] += 1
 print(counts)
 pl.figure()
+pl.subplot(2, 1, 1)
 pl.bar(
     [
         "OK",
         "No bottle",
         "Cap",
         "Label",
-        "Low",
-        "High",
-        "Cap, label",
-        "Cap, low",
-        "Cap, high",
-        "Label, low",
-        "Label, high",
-        "Cap, label, low",
-        "Cap, label, high",
+        "Cap, label"
     ],
     counts
 )
-
+counts = [0] * 3
+classification = load_classification("data\\classification_fluid.csv")
+for k, v in classification.items():
+    counts[v] += 1
+print(counts)
+pl.subplot(2, 1, 2)
+pl.bar(
+    [
+        "OK",
+        "Low",
+        "High",
+    ],
+    counts
+)
 pl.show()
