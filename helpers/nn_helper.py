@@ -158,10 +158,9 @@ def train_and_test_dnn(dnn, features_placeholder, label_placeholder, train_data:
         correct = tf.equal(tf.argmax(dnn, 1), tf.argmax(label_placeholder, 1))
         accuracy = tf.reduce_mean(tf.cast(correct, "float"))
         all_test_data = test_data.get_once()
-        print(
-            "Accuracy: %.2f" % (
-                accuracy.eval(
-                    {features_placeholder: all_test_data[0], label_placeholder: all_test_data[1]})))
+        accuracy = accuracy.eval({features_placeholder: all_test_data[0], label_placeholder: all_test_data[1]})
+        print("Accuracy: %.2f" % accuracy)
+        return accuracy
 
 
 class SampleSet:
