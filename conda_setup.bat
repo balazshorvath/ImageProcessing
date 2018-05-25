@@ -3,3 +3,4 @@ conda install -y -n Imageprocessing numpy
 conda install -y -n Imageprocessing matplotlib
 conda install -y -n Imageprocessing -c conda-forge opencv
 conda install -y -n Imageprocessing -c conda-forge tensorflow
+conda install -y -n Imageprocessing -c anaconda graphviz

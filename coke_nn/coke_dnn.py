@@ -38,14 +38,14 @@ for i in range(20):
     """
     print("Initializing DNN.")
     dnn = create_dnn([50, 50, 50], fluid_features_placeholder, n_features=fluid_feature_count,
-                     n_classes=fluid_classes_count, randomize_biases=True)
+                     n_classes=fluid_classes_count, randomize_biases=False)
     print("%d Initializing fluid DNN finished." % i)
     print("%d Training and testing fluid DNN." % i)
     accuracy = train_and_test_dnn(
         dnn,
         fluid_features_placeholder, fluid_label_placeholder,
         fluid_training, fluid_test,
-        epochs=500, learning_rate=0.0001
+        epochs=250, learning_rate=0.0001
     )
     accuracies.append(accuracy)
     print("%d Training fluid DNN finished." % i)
@@ -56,7 +56,7 @@ for i in range(20):
     """
     print("Initializing DNN.")
     dnn = create_dnn([50, 50, 50], cap_label_features_placeholder, n_features=cap_label_feature_count,
-                     n_classes=cap_label_classes_count, randomize_biases=True)
+                     n_classes=cap_label_classes_count, randomize_biases=False)
     print("Initializing cap and label DNN finished.")
     print("Training and testing cap and label DNN.")
     accuracy = train_and_test_dnn(

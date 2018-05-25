@@ -1,6 +1,6 @@
 from sklearn import tree
+from helpers.nn_helper import *
 import graphviz
-import random
 
 """
     Bottle description:
@@ -38,59 +38,75 @@ BOTTLE_NOT_ENOUGH_FLUID = 64
 BOTTLE_MISSING = 128
 """
 
+features = load_features("data/features.csv")
+fluid_features = {}
+cap_label_features = {}
 
-def load_classification(file_path):
-    csv_file = open(file_path, "r")
-    labels = {}
-    for row in csv_file:
-        r = row.split(",")
-        labels[r[0].strip()] = float(r[1].strip())
-    return labels
+for k, v in features.items():
+    fluid_features[k] = [v[len(v) - 1]]
+    cap_label_features[k] = v[:len(v) - 1]
 
+fluid_set = SampleSet(load_classification("data/classification_fluid.csv"), fluid_features, one_hot=False)
+cap_and_label_set = SampleSet(load_classification("data/classification_cap_label.csv"), cap_label_features,
+                              one_hot=False)
 
-def load_features(file_path):
-    csv_file = open(file_path, "r")
-    features = {}
-    for row in csv_file:
-        r = row.split(",")
-        parsed_data = []
-        for d in r[1:]:
-            parsed_data.append(float(d.strip()))
-        features[r[0]] = parsed_data
-    return features
+cap_label_results = []
+fluid_results = []
+for dzs in range(20):
+    fluid_training, fluid_test = fluid_set.get_data_containers(0.4, randomize=True)
+    cap_label_training, cap_label_test = cap_and_label_set.get_data_containers(0.4, randomize=True)
 
+    fluid_training_all = fluid_training.get_once()
+    cap_label_training_all = cap_label_training.get_once()
+    """
+        Cap label
+    """
+    classifier = tree.DecisionTreeClassifier()
+    classifier = classifier.fit(cap_label_training_all[0], cap_label_training_all[1])
+    tree.export_graphviz(classifier,
+                         out_file="cap_label_decision_tree.dot",
+                         feature_names=["rect_area1", "rect_center_x1", "rect_center_y1", "rect_area2",
+                                        "rect_center_x2", "rect_center_y2"],
+                         class_names=["OK", "No bottle", "Cap", "Label", "Label and cap"])
 
-# bottle_features = load_features("data.csv")
-# bottle_labels = load_classification("simple_classification.csv")
-features = load_features("data\\features.csv")
-labels = load_classification("data\\classification.csv")
-t_features = load_features("data\\test_features.csv")
-t_labels = load_classification("data\\test_classification.csv")
+    graphviz.render("dot", "png", "cap_label_decision_tree.dot")
+    good = 0
+    cap_label_test_all = cap_label_test.get_once()
+    test_len = len(cap_label_test_all[0])
+    for i in range(test_len):
+        prediction = classifier.predict([cap_label_test_all[0][i]])
+        actual_class = cap_label_test_all[1][i]
+        if prediction == actual_class:
+            good += 1
+        # print("Prediction:\t\t%d " % prediction)
+        # print("Actual class:\t%d " % actual_class)
+    accuracy = good / test_len
+    print(
+        "%d out of %d was good.\nAccuracy was %.2f" % (good, test_len, accuracy))
+    cap_label_results.append(accuracy)
+    """
+        Fluid
+    """
+    classifier = tree.DecisionTreeClassifier()
+    classifier = classifier.fit(fluid_training_all[0], fluid_training_all[1])
+    tree.export_graphviz(classifier,
+                         out_file="fluid_decision_tree.dot",
+                         feature_names=["y_coord"],
+                         class_names=["OK", "Low", "High"])
 
-training_features = []
-training_labels = []
-
-for i, feature_key in enumerate(features):
-    training_features.append(features[feature_key])
-    training_labels.append(labels[feature_key])
-
-classifier = tree.DecisionTreeClassifier()
-classifier = classifier.fit(training_features, training_labels)
-tree.export_graphviz(classifier,
-                     out_file="decision_tree.dot",
-                     feature_names=["rect_count", "rect_area1", "rect_center_x1", "rect_center_y1", "rect_area2",
-                                    "rect_center_x2", "rect_center_y2", "fluid_top_y"],
-                     class_names=["Perfect", "Cap", "Label", "Label and cap", "Fluid", "Fluid and Cap",
-                                  "Fluid and label", "Bottle missing"])
-
-graphviz.render("dot", "png", "decision_tree.dot")
-good = 0
-for feature_key in t_labels:
-    print("File: %s" + feature_key)
-    prediction = classifier.predict([t_features[feature_key]])
-    actual_class = t_labels[feature_key]
-    if prediction == actual_class:
-        good += 1
-    print("Prediction:\t\t%d " % prediction)
-    print("Actual class:\t%d " % actual_class)
-print("%d out of %d was good.\nAccuracy was %.2f" % (good, len(t_labels), good / len(t_labels)))
+    graphviz.render("dot", "png", "fluid_decision_tree.dot")
+    good = 0
+    fluid_test_all = fluid_test.get_once()
+    test_len = len(fluid_test_all[0])
+    for i in range(test_len):
+        prediction = classifier.predict([fluid_test_all[0][i]])
+        actual_class = fluid_test_all[1][i]
+        if prediction == actual_class:
+            good += 1
+        # print("Prediction:\t\t%d " % prediction)
+        # print("Actual class:\t%d " % actual_class)
+    accuracy = good / test_len
+    print("%d out of %d was good.\nAccuracy was %.2f" % (good, test_len, accuracy))
+    fluid_results.append(accuracy)
+print("CP: " + str(cap_label_results))
+print("Fluid: " + str(fluid_results))
